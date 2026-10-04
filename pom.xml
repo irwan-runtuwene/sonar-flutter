@@ -55,10 +55,13 @@
         <license.mailto>contact@insideapp.fr</license.mailto>
 
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-        <jdk.min.version>1.9</jdk.min.version>
+        <jdk.min.version>17</jdk.min.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <sonar.version>7.9</sonar.version>
+        <sonar.version>26.9.0.129388</sonar.version>
+        <!-- last sonar-plugin-api-impl that still ships SensorContextTester / DefaultInputFile -->
+        <sonar-impl.version>26.5.0.122743</sonar-impl.version>
+        <sonar-plugin-api.version>14.0.0.4498</sonar-plugin-api.version>
 
         <assertj.version>3.5.2</assertj.version>
         <junit.version>4.13.1</junit.version>
@@ -68,8 +71,8 @@
         <ant.version>1.6</ant.version>
         <assertj.version>3.5.2</assertj.version>
         <jproc.version>2.2.3</jproc.version>
-        <apache-commons.version>2.12.0</apache-commons.version>
-        <apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
+        <apache-commons.version>2.20.0</apache-commons.version>
+        <apache-commons-lang3.version>3.19.0</apache-commons-lang3.version>
 
         <sonar.sources>src/main/java,src/main/js</sonar.sources>
         <sonar.exclusions>file:**/src/main/java/**/generated/**/*.java</sonar.exclusions>
@@ -81,9 +84,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.sonarsource.sonarqube</groupId>
+            <groupId>org.sonarsource.api.plugin</groupId>
             <artifactId>sonar-plugin-api</artifactId>
-            <version>${sonar.version}</version>
+            <version>${sonar-plugin-api.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -148,8 +151,8 @@
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.sonarsource.sonarqube</groupId>
-            <artifactId>sonar-testing-harness</artifactId>
-            <version>${sonar.version}</version>
+            <artifactId>sonar-plugin-api-impl</artifactId>
+            <version>${sonar-impl.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
