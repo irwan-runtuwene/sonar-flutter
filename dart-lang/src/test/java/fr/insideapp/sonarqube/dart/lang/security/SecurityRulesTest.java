@@ -46,6 +46,36 @@ public class SecurityRulesTest {
     }
 
     @Test
+    public void certificatePinningIsAHotspotNeverTheVulnerability() {
+        String[] pinning = {"client.badCertificateCallback = (cert, host, port) {",
+                "  if (cert.sha256 == pinned) return true;", "  return false;", "};"};
+        assertThat(hit("accept_all_certificates", pinning)).isFalse();
+        assertThat(hit("custom_certificate_callback", pinning)).isTrue();
+
+        // always-true as a wrapped block body is the vulnerability, and then not also a hotspot
+        String[] blockTrue = {"client.badCertificateCallback = (c, h, p) {", "  return true;", "};"};
+        assertThat(hit("accept_all_certificates", blockTrue)).isTrue();
+        assertThat(hit("custom_certificate_callback", blockTrue)).isFalse();
+
+        // always-false, wrapped: neither
+        String[] arrowFalse = {"client", "  ..badCertificateCallback =", "      (cert, host, port) => false;"};
+        assertThat(hit("accept_all_certificates", arrowFalse)).isFalse();
+        assertThat(hit("custom_certificate_callback", arrowFalse)).isFalse();
+        String[] blockFalse = {"client.badCertificateCallback = (c, h, p) {", "  return false;", "};"};
+        assertThat(hit("accept_all_certificates", blockFalse)).isFalse();
+        assertThat(hit("custom_certificate_callback", blockFalse)).isFalse();
+
+        // cascade: nothing but the next cascade section follows the constant
+        String[] cascade = {"client", "  ..badCertificateCallback = (c, h, p) => true", "  ..connectionTimeout = const Duration(seconds: 5);"};
+        assertThat(hit("accept_all_certificates", cascade)).isTrue();
+        assertThat(hit("custom_certificate_callback", cascade)).isFalse();
+
+        // typed parameters
+        assertThat(hit("accept_all_certificates",
+                "client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;")).isTrue();
+    }
+
+    @Test
     public void cleartext() {
         assertThat(hit("cleartext_http", "final u = 'http://api.example-bank.io/v1';")).isTrue();
         assertThat(hit("cleartext_http", "final u = Uri.http(host, '/x');")).isTrue();

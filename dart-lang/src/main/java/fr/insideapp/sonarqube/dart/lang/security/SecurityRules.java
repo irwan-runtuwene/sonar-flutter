@@ -102,7 +102,7 @@ public final class SecurityRules {
      * does anything else (a pinning check that returns true on a match) deliberately does not match.
      */
     private static String callbackThatAlways(String value) {
-        return "\\bbadCertificateCallback\\s*=\\s*\\([^)]*\\)\\s*(=>\\s*" + value + "\\s*[;,)]|\\{\\s*return\\s+" + value + "\\s*;\\s*\\})";
+        return "\\bbadCertificateCallback\\s*=\\s*\\([^)]*\\)\\s*(=>\\s*" + value + "\\s*(?:[;,)]|(?=\\.\\.))|\\{\\s*return\\s+" + value + "\\s*;\\s*\\})";
     }
 
     private SecurityRules() {
