@@ -17,7 +17,9 @@
  */
 package fr.insideapp.sonarqube.dart.lang.issues.dartanalyzer;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.internal.TestInputFileBuilder;
 import org.sonar.api.batch.sensor.internal.SensorContextTester;
@@ -33,6 +35,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DartAnalyzerSensorTest {
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     private static final String CODE = "import 'dart:io';\nvoid main() {}\n";
 
@@ -54,5 +59,17 @@ public class DartAnalyzerSensorTest {
         ctx.allIssues().forEach(i -> byRule.put(i.ruleKey().rule(), i));
         assertThat(byRule).containsOnlyKeys("dart_diagnostic", "avoid_print");
         assertThat(byRule.get("dart_diagnostic").primaryLocation().message()).isEqualTo("[unused_import] Unused import: 'dart:io'.");
+    }
+
+    @Test
+    public void skipsADirectoryWithoutPubspecInsteadOfAbortingTheAnalysis() throws Exception {
+        Path base = tmp.getRoot().toPath();
+        SensorContextTester ctx = SensorContextTester.create(base);
+        ctx.fileSystem().add(new TestInputFileBuilder("p", base.toFile(), base.resolve("lib/m.dart").toFile())
+                .setLanguage("dart").setType(InputFile.Type.MAIN).setContents(CODE).build());
+
+        new DartAnalyzerSensor().execute(ctx);
+
+        assertThat(ctx.allIssues()).isEmpty();
     }
 }

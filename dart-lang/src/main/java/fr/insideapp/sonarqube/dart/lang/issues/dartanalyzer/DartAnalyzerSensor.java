@@ -64,6 +64,10 @@ public class DartAnalyzerSensor implements Sensor {
     @Override
     @ParametersAreNonnullByDefault
     public void execute(SensorContext sensorContext) {
+        if (!sensorContext.fileSystem().resolvePath(PubSpec.NAME).exists()) {
+            LOGGER.warn("No {} in {}; skipping Dart analysis", PubSpec.NAME, sensorContext.fileSystem().baseDir());
+            return;
+        }
         try {
             final PubSpec pubSpec = PubSpecParser.parse(sensorContext);
             final AnalyzerOutput output = AnalyzerExecutable.create(sensorContext, pubSpec).analyze();
