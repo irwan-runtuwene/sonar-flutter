@@ -81,11 +81,18 @@ public class DartSecuritySensor implements Sensor {
         if (!rule.pattern().matcher(line).find()) {
             return false;
         }
-        if (rule.unless() != null && rule.unless().matcher(line).find()) {
+        String span = line;
+        if (rule.forward()) {
+            span = String.join("\n", lines.subList(index, Math.min(lines.size(), index + rule.window() + 1)));
+        }
+        if (rule.unless() != null && rule.unless().matcher(span).find()) {
             return false;
         }
         if (rule.context() == null) {
             return true;
+        }
+        if (rule.forward()) {
+            return rule.context().matcher(span).find();
         }
         int from = Math.max(0, index - rule.window());
         int to = Math.min(lines.size(), index + rule.window() + 1);

@@ -33,11 +33,13 @@ public final class SecurityRules {
                     VULNERABILITY, "CRITICAL", 295,
                     "<p>A <code>badCertificateCallback</code> that always returns <code>true</code> accepts any certificate, so a man-in-the-middle can read and alter traffic.</p>"
                             + "<p>Remove the callback, or pin the expected certificate or public key.</p>",
-                    "\\bbadCertificateCallback\\s*=.*(=>\\s*true\\b|return\\s+true\\b)"),
+                    "\\bbadCertificateCallback\\s*=")
+                    .ahead("(=>\\s*true\\b|return\\s+true\\b)", 2),
             new SecurityRule("custom_certificate_callback", "Custom TLS certificate checks should be reviewed",
                     SECURITY_HOTSPOT, "MAJOR", 295,
                     "<p>A custom <code>badCertificateCallback</code> overrides certificate validation. Check that it only accepts a pinned certificate and never returns <code>true</code> unconditionally.</p>",
-                    "\\bbadCertificateCallback\\s*=").unless("(=>\\s*(true|false)\\b|return\\s+(true|false)\\b)"),
+                    "\\bbadCertificateCallback\\s*=").unless("(=>\\s*(true|false)\\b|return\\s+(true|false)\\b)")
+                    .ahead("\\bbadCertificateCallback", 2),
             new SecurityRule("cleartext_http", "Clear-text HTTP should not be used",
                     SECURITY_HOTSPOT, "MAJOR", 319,
                     "<p>Traffic over <code>http://</code> can be read and modified on the network. Use <code>https://</code>.</p>",
@@ -69,9 +71,10 @@ public final class SecurityRules {
                     "<p>Secrets committed to source control or shipped in the app can be extracted. Load them from the environment, a secret store or the platform keystore.</p>",
                     "(?i)\\b\\w*(password|passwd|pwd|secret|api_?key|access_?token|auth_?token|private_?key|client_?secret)\\w*\\s*[:=]\\s*(const\\s+)?['\"](?![^'\"]*\\$)[^'\"\\s]{8,}['\"]")
                     .unless("fromEnvironment"),
-            new SecurityRule("sql_injection", "SQL queries must not be built with string interpolation",
-                    VULNERABILITY, "CRITICAL", 89,
-                    "<p>Interpolating or concatenating values into raw SQL allows injection. Pass values as bound arguments (<code>?</code> placeholders).</p>",
+            new SecurityRule("sql_injection", "SQL queries should not be built with string interpolation",
+                    SECURITY_HOTSPOT, "CRITICAL", 89,
+                    "<p>Interpolating or concatenating values into raw SQL allows injection when any of them is user input. Pass values as bound arguments (<code>?</code> placeholders). "
+                            + "Interpolating a trusted table or column name is fine, which is why this needs a review.</p>",
                     "\\b(rawQuery|rawInsert|rawUpdate|rawDelete|customSelect|customStatement|customUpdate|customInsert)\\s*\\(\\s*(?:'[^']*\\$[{a-zA-Z_][^']*'|\"[^\"]*\\$[{a-zA-Z_][^\"]*\"|['\"][^'\"]*['\"]\\s*\\+)|\\b(db|database|txn|batch)\\s*\\.\\s*execute\\s*\\(\\s*(?:'[^']*\\$[{a-zA-Z_][^']*'|\"[^\"]*\\$[{a-zA-Z_][^\"]*\")"),
             new SecurityRule("webview_unrestricted_javascript", "Unrestricted WebView JavaScript should be reviewed",
                     SECURITY_HOTSPOT, "MAJOR", 79,

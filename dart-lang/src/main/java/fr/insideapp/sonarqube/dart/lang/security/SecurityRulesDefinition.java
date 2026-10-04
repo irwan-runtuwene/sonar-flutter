@@ -32,11 +32,20 @@ public class SecurityRulesDefinition implements RulesDefinition {
         for (SecurityRule r : SecurityRules.ALL) {
             create(repository, r.key(), r.name(), r.type(), r.severity(), r.cwe(), r.html());
         }
+        String snapshot;
+        try {
+            snapshot = DartDependencySensor.loadSnapshot().generatedAt();
+        } catch (java.io.IOException e) {
+            snapshot = "an unknown date";
+        }
         create(repository, SecurityRules.VULNERABLE_DEPENDENCY, "Dependencies with known vulnerabilities must be updated",
                 RuleType.VULNERABILITY, "CRITICAL", new int[]{1395},
                 "<p>A package locked in <code>pubspec.lock</code> is affected by a published advisory (CVE or GHSA). "
                         + "Upgrade to a fixed version with <code>dart pub upgrade &lt;package&gt;</code>.</p>"
-                        + "<p>Matching uses an advisory snapshot bundled with this plugin, so it only knows advisories published before the plugin was built.</p>");
+                        + "<p><strong>No finding means \"not in the advisory snapshot bundled with this plugin (fetched " + snapshot
+                        + " from OSV, Pub ecosystem)\", not \"no known CVE\".</strong> "
+                        + "Advisories published after that date, and packages OSV does not cover, are not checked. "
+                        + "Keep scanning with a live tool such as <code>osv-scanner</code> for clearance.</p>");
 
         repository.done();
     }

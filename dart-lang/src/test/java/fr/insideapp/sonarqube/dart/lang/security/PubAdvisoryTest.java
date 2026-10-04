@@ -60,6 +60,17 @@ public class PubAdvisoryTest {
     }
 
     @Test
+    public void twoAffectedWindowsAreBothHonoured() {
+        PubAdvisory a = new PubAdvisory("X", List.of(), "x", "MAJOR", "p",
+                List.of(Map.of("introduced", "0", "fixed", "1.0.5"), Map.of("introduced", "2.0.0", "fixed", "2.0.3")), List.of());
+        assertThat(a.affects("1.0.4")).isTrue();
+        assertThat(a.affects("1.5.0")).isFalse();
+        assertThat(a.affects("2.0.2")).isTrue();
+        assertThat(a.affects("2.0.3")).isFalse();
+        assertThat(a.fixedIn("2.0.2")).isEqualTo("2.0.3");
+    }
+
+    @Test
     public void unparseableVersionNeverMatchesRanges() {
         assertThat(http.affects("not-a-version")).isFalse();
     }

@@ -69,7 +69,6 @@
         <sslr.version>1.23</sslr.version>
         <sslr-squid-bridge.version>2.7.1.392</sslr-squid-bridge.version>
         <ant.version>1.6</ant.version>
-        <assertj.version>3.27.3</assertj.version>
         <guava.version>33.7.2-jre</guava.version>
         <jproc.version>2.2.3</jproc.version>
         <apache-commons.version>2.20.0</apache-commons.version>

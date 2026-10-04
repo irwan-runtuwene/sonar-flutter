@@ -23,20 +23,29 @@ import java.util.regex.Pattern;
 
 /**
  * A line-based source pattern rule. {@code context}, when set, must also match somewhere in the
- * {@code window} lines around the hit (used to cut noise, e.g. Random() only near secret-looking words).
+ * {@code window} lines around (or, if {@code forward}, after) the hit (used to cut noise, e.g. Random() only near secret-looking words).
  */
 public record SecurityRule(String key, String name, RuleType type, String severity, int[] cwe, String html,
-                           Pattern pattern, Pattern unless, Pattern context, int window) {
+                           Pattern pattern, Pattern unless, Pattern context, int window, boolean forward) {
 
     SecurityRule(String key, String name, RuleType type, String severity, int cwe, String html, String regex) {
-        this(key, name, type, severity, new int[]{cwe}, html, Pattern.compile(regex), null, null, 0);
+        this(key, name, type, severity, new int[]{cwe}, html, Pattern.compile(regex), null, null, 0, false);
     }
 
     SecurityRule unless(String regex) {
-        return new SecurityRule(key, name, type, severity, cwe, html, pattern, Pattern.compile(regex), context, window);
+        return new SecurityRule(key, name, type, severity, cwe, html, pattern, Pattern.compile(regex), context, window, forward);
     }
 
+    /** {@code context} must match within {@code window} lines either side of the hit. */
     SecurityRule near(String regex, int window) {
-        return new SecurityRule(key, name, type, severity, cwe, html, pattern, unless, Pattern.compile(regex), window);
+        return new SecurityRule(key, name, type, severity, cwe, html, pattern, unless, Pattern.compile(regex), window, false);
+    }
+
+    /**
+     * For statements that {@code dart format} wraps: {@code context} must match on the hit line or the next
+     * {@code window} lines, and {@code unless}, if set, is tested over that same span.
+     */
+    SecurityRule ahead(String regex, int window) {
+        return new SecurityRule(key, name, type, severity, cwe, html, pattern, unless, Pattern.compile(regex), window, true);
     }
 }

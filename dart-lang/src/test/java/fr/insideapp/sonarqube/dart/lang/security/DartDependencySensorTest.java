@@ -102,6 +102,17 @@ public class DartDependencySensorTest {
     }
 
     @Test
+    public void snapshotCarriesItsDateAndRuleDescriptionStatesIt() throws Exception {
+        String date = DartDependencySensor.loadSnapshot().generatedAt();
+        assertThat(date).matches("\\d{4}-\\d{2}-\\d{2}");
+        var ctx = new org.sonar.api.server.rule.RulesDefinition.Context();
+        new SecurityRulesDefinition().define(ctx);
+        String html = ctx.repository(SecurityRulesDefinition.REPOSITORY_KEY).rule(SecurityRules.VULNERABLE_DEPENDENCY)
+                .htmlDescription();
+        assertThat(html).contains(date).contains("not \"no known CVE\"");
+    }
+
+    @Test
     public void snapshotLoads() throws Exception {
         assertThat(DartDependencySensor.loadAdvisories()).hasSizeGreaterThanOrEqualTo(10)
                 .allSatisfy(a -> assertThat(a.pkg()).isNotBlank());

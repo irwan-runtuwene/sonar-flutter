@@ -123,12 +123,20 @@ public class DartDependencySensor implements Sensor {
         issue.at(spec == null ? location.on(context.project()) : location.on(spec)).save();
     }
 
-    static List<PubAdvisory> loadAdvisories() throws IOException {
+    /** The bundled advisories and the date they were fetched from OSV. */
+    public record Snapshot(String generatedAt, List<PubAdvisory> advisories) {
+    }
+
+    static Snapshot loadSnapshot() throws IOException {
         try (InputStream in = DartDependencySensor.class.getResourceAsStream(ADVISORIES)) {
             if (in == null) {
                 throw new IOException("missing resource " + ADVISORIES);
             }
-            return List.of(new ObjectMapper().readValue(in, PubAdvisory[].class));
+            return new ObjectMapper().readValue(in, Snapshot.class);
         }
+    }
+
+    static List<PubAdvisory> loadAdvisories() throws IOException {
+        return loadSnapshot().advisories();
     }
 }

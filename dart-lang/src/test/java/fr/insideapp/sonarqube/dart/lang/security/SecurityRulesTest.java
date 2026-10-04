@@ -36,6 +36,11 @@ public class SecurityRulesTest {
         assertThat(hit("accept_all_certificates", "client.badCertificateCallback = (cert, host, port) => true;")).isTrue();
         assertThat(hit("accept_all_certificates", "client.badCertificateCallback = (c, h, p) { return true; };")).isTrue();
         assertThat(hit("accept_all_certificates", "client.badCertificateCallback = (c, h, p) => false;")).isFalse();
+        // dart format wraps long assignments onto the next line
+        assertThat(hit("accept_all_certificates", "client", "  ..badCertificateCallback =", "      (cert, host, port) => true;")).isTrue();
+        assertThat(hit("custom_certificate_callback", "client", "  ..badCertificateCallback =", "      (cert, host, port) => true;")).isFalse();
+        assertThat(hit("accept_all_certificates", "client.badCertificateCallback = (c, h, p) => pinned(c);", "", "", "bool f() => true;")).isFalse();
+        assertThat(hit("custom_certificate_callback", "client.badCertificateCallback =", "    (c, h, p) => pinned(c);")).isTrue();
         assertThat(hit("custom_certificate_callback", "client.badCertificateCallback = (c, h, p) => pinned(c);")).isTrue();
         assertThat(hit("custom_certificate_callback", "client.badCertificateCallback = (c, h, p) => true;")).isFalse();
     }
