@@ -34,6 +34,8 @@
                 <configuration>
                     <pluginClass>fr.insideapp.sonarqube.flutter.FlutterPlugin</pluginClass>
                     <pluginName>Flutter</pluginName>
+                    <pluginApiMinVersion>14.0</pluginApiMinVersion>
+                    <jreMinVersion>17</jreMinVersion>
                 </configuration>
             </plugin>
 
