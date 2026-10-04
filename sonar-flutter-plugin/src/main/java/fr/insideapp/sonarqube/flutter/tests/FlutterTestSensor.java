@@ -70,7 +70,7 @@ public class FlutterTestSensor implements Sensor {
 
     private void saveSuite(FlutterUnitTestSuite suite, SensorContext sensorContext) {
 
-        InputFile inputFile = sensorContext.fileSystem().inputFile(sensorContext.fileSystem().predicates().hasAbsolutePath(suite.getPath()));
+        InputFile inputFile = sensorContext.fileSystem().inputFile(sensorContext.fileSystem().predicates().hasPath(suite.getPath()));
 
         if (inputFile == null) {
             LOGGER.error("Unable to find test file {}", suite.getPath());
