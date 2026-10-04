@@ -34,12 +34,13 @@ public final class SecurityRules {
                     "<p>A <code>badCertificateCallback</code> that always returns <code>true</code> accepts any certificate, so a man-in-the-middle can read and alter traffic.</p>"
                             + "<p>Remove the callback, or pin the expected certificate or public key.</p>",
                     "\\bbadCertificateCallback\\s*=")
-                    .ahead("(=>\\s*true\\b|return\\s+true\\b)", 2),
+                    .ahead(callbackThatAlways("true"), 3),
             new SecurityRule("custom_certificate_callback", "Custom TLS certificate checks should be reviewed",
                     SECURITY_HOTSPOT, "MAJOR", 295,
                     "<p>A custom <code>badCertificateCallback</code> overrides certificate validation. Check that it only accepts a pinned certificate and never returns <code>true</code> unconditionally.</p>",
-                    "\\bbadCertificateCallback\\s*=").unless("(=>\\s*(true|false)\\b|return\\s+(true|false)\\b)")
-                    .ahead("\\bbadCertificateCallback", 2),
+                    "\\bbadCertificateCallback\\s*=")
+                    .unless(callbackThatAlways("(true|false)"))
+                    .ahead("\\bbadCertificateCallback", 3),
             new SecurityRule("cleartext_http", "Clear-text HTTP should not be used",
                     SECURITY_HOTSPOT, "MAJOR", 319,
                     "<p>Traffic over <code>http://</code> can be read and modified on the network. Use <code>https://</code>.</p>",
@@ -95,6 +96,14 @@ public final class SecurityRules {
                     "<p>SharedPreferences is stored unencrypted. Keep tokens and passwords in the platform keystore (for example <code>flutter_secure_storage</code>).</p>",
                     "(?i)\\b\\w*(prefs|preferences)\\w*\\s*\\.\\s*set(String|StringList)\\s*\\(\\s*['\"][^'\"]*(password|passwd|secret|token|api_?key|private_?key)")
     );
+
+    /**
+     * A callback whose entire body is the constant, as an arrow or as {@code { return <value>; }}. A body that
+     * does anything else (a pinning check that returns true on a match) deliberately does not match.
+     */
+    private static String callbackThatAlways(String value) {
+        return "\\bbadCertificateCallback\\s*=\\s*\\([^)]*\\)\\s*(=>\\s*" + value + "\\s*[;,)]|\\{\\s*return\\s+" + value + "\\s*;\\s*\\})";
+    }
 
     private SecurityRules() {
     }
