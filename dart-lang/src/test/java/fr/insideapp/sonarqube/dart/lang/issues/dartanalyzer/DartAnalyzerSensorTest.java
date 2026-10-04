@@ -49,6 +49,7 @@ public class DartAnalyzerSensorTest {
 
         new DartAnalyzerSensor().recordIssues(ctx, reported);
 
+        assertThat(ctx.allIssues()).hasSize(2);
         Map<String, Issue> byRule = new HashMap<>();
         ctx.allIssues().forEach(i -> byRule.put(i.ruleKey().rule(), i));
         assertThat(byRule).containsOnlyKeys("dart_diagnostic", "avoid_print");
