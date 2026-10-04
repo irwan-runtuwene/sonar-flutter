@@ -50,8 +50,8 @@ public class DartAnalyzerMachineReportParser implements DartAnalyzerReportParser
                 }).collect(Collectors.toList());
     }
 
-    /** Dart escapes `\` as `\\` and `|` as `\|`; older SDKs doubled the backslash before a pipe. */
+    /** Dart escapes each `\` as `\\` and each `|` as `\|`. */
     private static String unescape(String value) {
-        return value.replace("\\\\|", "|").replaceAll("\\\\(.)", "$1");
+        return value.replaceAll("\\\\(.)", "$1");
     }
 }

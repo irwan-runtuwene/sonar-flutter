@@ -40,7 +40,7 @@ public class DartAnalyzerMachineReportParserTest {
                 + "INFO|HINT|UNUSED_LOCAL_VARIABLE|/some/path/lib/main.dart|69|42|17|The value of the local variable '_controller' isn't used.\n"
                 + "ERROR|COMPILE_TIME_ERROR|MISSING_DEFAULT_VALUE_FOR_PARAMETER|/some/path/lib/main.dart|26|19|13|The parameter 'dataTypeMulti' can't have a value of 'null' because of its type, but the implicit default value is 'null'.\n"
                 + "WARNING|STATIC_WARNING|DEAD_NULL_AWARE_EXPRESSION|/some/path/lib/main.dart|27|47|8|The left operand can't be null, so the right operand is never executed.\n"
-                + "INFO|HINT|DUMMY_RULE|/some/path/with/pipe/_\\\\|_/lib/main.dart|2|3|4|Some message with pipe _\\\\|_.";
+                + "INFO|HINT|DUMMY_RULE|/some/path/with/pipe/_\\|_/lib/main.dart|2|3|4|Some message with pipe _\\|_.";
 
         List<DartAnalyzerReportIssue> issues = parser.parse(input);
         assertThat(issues).hasSize(5);
@@ -105,5 +105,14 @@ public class DartAnalyzerMachineReportParserTest {
         assertRuleId(issues.get(0), "prefer_v2_thing");
         assertFilePath(issues.get(0), "C:\\proj\\a|b.dart");
         assertMessage(issues.get(0), "Use a | b.");
+    }
+
+    @Test
+    public void parseEscapedBackslashBeforeEscapedPipe() {
+        // Dart emits a literal backslash followed by a pipe as \\ + \| = three backslashes and a pipe
+        List<DartAnalyzerReportIssue> issues = parser.parse("INFO|HINT|DUMMY_RULE|/p/lib/main.dart|1|1|1|a\\\\\\|b");
+
+        assertThat(issues).hasSize(1);
+        assertMessage(issues.get(0), "a\\|b");
     }
 }

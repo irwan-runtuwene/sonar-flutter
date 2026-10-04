@@ -26,7 +26,9 @@ import org.sonar.api.batch.sensor.issue.Issue;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,10 +49,9 @@ public class DartAnalyzerSensorTest {
 
         new DartAnalyzerSensor().recordIssues(ctx, reported);
 
-        List<Issue> issues = Arrays.asList(ctx.allIssues().toArray(new Issue[0]));
-        assertThat(issues).hasSize(2);
-        assertThat(issues.get(0).ruleKey().rule()).isEqualTo("dart_diagnostic");
-        assertThat(issues.get(0).primaryLocation().message()).isEqualTo("[unused_import] Unused import: 'dart:io'.");
-        assertThat(issues.get(1).ruleKey().rule()).isEqualTo("avoid_print");
+        Map<String, Issue> byRule = new HashMap<>();
+        ctx.allIssues().forEach(i -> byRule.put(i.ruleKey().rule(), i));
+        assertThat(byRule).containsOnlyKeys("dart_diagnostic", "avoid_print");
+        assertThat(byRule.get("dart_diagnostic").primaryLocation().message()).isEqualTo("[unused_import] Unused import: 'dart:io'.");
     }
 }
