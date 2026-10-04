@@ -25,6 +25,9 @@ import fr.insideapp.sonarqube.dart.lang.issues.dartanalyzer.executable.AnalyzerE
 import fr.insideapp.sonarqube.dart.lang.issues.dartanalyzer.AnalyzerOutput;
 import fr.insideapp.sonarqube.dart.lang.issues.dartanalyzer.DartAnalyzerRulesDefinition;
 import fr.insideapp.sonarqube.dart.lang.issues.dartanalyzer.DartAnalyzerSensor;
+import fr.insideapp.sonarqube.dart.lang.security.DartDependencySensor;
+import fr.insideapp.sonarqube.dart.lang.security.DartSecuritySensor;
+import fr.insideapp.sonarqube.dart.lang.security.SecurityRulesDefinition;
 import fr.insideapp.sonarqube.flutter.coverage.FlutterCoverageSensor;
 import fr.insideapp.sonarqube.flutter.tests.FlutterTestSensor;
 import org.sonar.api.Plugin;
@@ -68,6 +71,9 @@ public class FlutterPlugin implements Plugin {
 
         // dartanalyzer Sensor
         context.addExtensions(DartAnalyzerSensor.class, DartAnalyzerRulesDefinition.class);
+
+        // Security rules and pubspec.lock advisories
+        context.addExtensions(SecurityRulesDefinition.class, DartSecuritySensor.class, DartDependencySensor.class);
 
         context.addExtension(
                 PropertyDefinition.builder(FLUTTER_TESTS_REPORT_PATH_KEY)

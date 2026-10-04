@@ -19,6 +19,8 @@ package fr.insideapp.sonarqube.dart.lang.issues;
 
 import fr.insideapp.sonarqube.dart.lang.Dart;
 import fr.insideapp.sonarqube.dart.lang.issues.dartanalyzer.DartAnalyzerRulesDefinition;
+import fr.insideapp.sonarqube.dart.lang.security.SecurityRules;
+import fr.insideapp.sonarqube.dart.lang.security.SecurityRulesDefinition;
 import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
@@ -54,6 +56,10 @@ public class DartProfile implements BuiltInQualityProfilesDefinition {
         } catch (IOException e) {
             LOGGER.error("Failed to load dartanalyzer rules", e);
         }
+
+        // security rules: every one is on by default
+        SecurityRules.ALL.forEach(r -> profile.activateRule(SecurityRulesDefinition.REPOSITORY_KEY, r.key()));
+        profile.activateRule(SecurityRulesDefinition.REPOSITORY_KEY, SecurityRules.VULNERABLE_DEPENDENCY);
 
         profile.done();
     }
