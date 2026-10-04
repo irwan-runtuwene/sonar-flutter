@@ -70,6 +70,7 @@
         <sslr-squid-bridge.version>2.7.1.392</sslr-squid-bridge.version>
         <ant.version>1.6</ant.version>
         <assertj.version>3.5.2</assertj.version>
+        <guava.version>33.7.2-jre</guava.version>
         <jproc.version>2.2.3</jproc.version>
         <apache-commons.version>2.20.0</apache-commons.version>
         <apache-commons-lang3.version>3.19.0</apache-commons-lang3.version>
@@ -90,6 +91,11 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
+        </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -115,12 +121,22 @@
             <groupId>org.sonarsource.sslr</groupId>
             <artifactId>sslr-core</artifactId>
             <version>${sslr.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.sonarsource.sslr-squid-bridge</groupId>
             <artifactId>sslr-squid-bridge</artifactId>
             <version>${sslr-squid-bridge.version}</version>
             <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.sonar.sslr</groupId>
                     <artifactId>sslr-core</artifactId>
