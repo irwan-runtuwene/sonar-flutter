@@ -39,4 +39,11 @@ public class DartAnalyzerRulesDefinitionTest {
 
 
     }
+
+    @Test
+    public void unmappedDiagnosticsFallBackToCatchAllRule() throws Exception {
+        assertThat(DartAnalyzerRulesDefinition.knownRuleKeys())
+                .contains(DartAnalyzerRulesDefinition.FALLBACK_RULE_KEY, "use_null_aware_elements")
+                .doesNotContain("unused_import");
+    }
 }

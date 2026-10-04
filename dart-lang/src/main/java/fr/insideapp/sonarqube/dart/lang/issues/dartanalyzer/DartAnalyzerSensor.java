@@ -26,6 +26,7 @@ import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.InputFile.Type;
 import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
+import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.utils.log.Logger;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 
@@ -85,8 +87,17 @@ public class DartAnalyzerSensor implements Sensor {
 
     }
 
-    private void recordIssues(SensorContext sensorContext, List<DartAnalyzerReportIssue> issues) {
-        issues.forEach(issue -> {
+    private void recordIssues(SensorContext sensorContext, List<DartAnalyzerReportIssue> issues) throws IOException {
+        final Set<String> known = DartAnalyzerRulesDefinition.knownRuleKeys();
+        for (DartAnalyzerReportIssue reported : issues) {
+            DartAnalyzerReportIssue issue = reported;
+            String ruleKey = issue.getRuleId().toLowerCase(Locale.ROOT);
+            if (!known.contains(ruleKey)) {
+                issue = new DartAnalyzerReportIssue(DartAnalyzerRulesDefinition.FALLBACK_RULE_KEY,
+                        "[" + ruleKey + "] " + issue.getMessage(), issue.getFilePath(),
+                        issue.getLineNumber(), issue.getColNumber(), issue.getLength());
+                ruleKey = DartAnalyzerRulesDefinition.FALLBACK_RULE_KEY;
+            }
             File file = sensorContext.fileSystem().resolvePath(issue.getFilePath());
             LOGGER.debug("Recording issue for {}", file.getAbsolutePath());
 
@@ -95,11 +106,10 @@ public class DartAnalyzerSensor implements Sensor {
                 LOGGER.warn("File not included in SonarQube {}", file.getAbsoluteFile());
             } else {
                 final InputFile inputFile = Objects.requireNonNull(sensorContext.fileSystem().inputFile(fp));
-                sensorContext.newIssue()
-                        .forRule(RuleKey.of(DartAnalyzerRulesDefinition.REPOSITORY_KEY, issue.getRuleId().toLowerCase(Locale.ROOT)))
-                        .at(issue.toNewIssueLocationFor(inputFile))
-                        .save();
+                final NewIssue newIssue = sensorContext.newIssue()
+                        .forRule(RuleKey.of(DartAnalyzerRulesDefinition.REPOSITORY_KEY, ruleKey));
+                newIssue.at(issue.toNewIssueLocationFor(newIssue, inputFile)).save();
             }
-        });
+        }
     }
 }

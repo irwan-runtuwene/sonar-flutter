@@ -27,12 +27,27 @@ import org.sonar.api.utils.log.Loggers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DartAnalyzerRulesDefinition implements RulesDefinition {
     private static final Logger LOGGER = Loggers.get(DartAnalyzerRulesDefinition.class);
     public static final String REPOSITORY_KEY = "dartanalyzer";
     public static final String REPOSITORY_NAME = REPOSITORY_KEY;
     public static final String RULES_FILE = "/dartanalyzer/rules.json";
+    /** Catch-all for analyzer diagnostics that have no dedicated rule. */
+    public static final String FALLBACK_RULE_KEY = "dart_diagnostic";
+
+    private static Set<String> knownKeys;
+
+    /** Keys of every rule in {@link #RULES_FILE}. */
+    public static synchronized Set<String> knownRuleKeys() throws IOException {
+        if (knownKeys == null) {
+            knownKeys = new RepositoryRuleParser().parse(RULES_FILE).stream()
+                    .map(r -> r.key).collect(Collectors.toSet());
+        }
+        return knownKeys;
+    }
 
     @Override
     public void define(Context context) {

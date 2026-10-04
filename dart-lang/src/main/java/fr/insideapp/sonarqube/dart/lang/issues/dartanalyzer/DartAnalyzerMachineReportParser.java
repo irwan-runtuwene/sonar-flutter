@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public class DartAnalyzerMachineReportParser implements DartAnalyzerReportParser {
 
-    private static final Pattern PATTERN = Pattern.compile("^([A-Z]*)\\|([A-Z_]*)\\|([A-Z_]*)\\|(.*)\\|(\\d*)\\|(\\d*)\\|(\\d*)\\|(.*)$");
+    private static final Pattern PATTERN = Pattern.compile("^([A-Z]*)\\|([A-Z_]*)\\|([A-Z0-9_]*)\\|(.*)\\|(\\d*)\\|(\\d*)\\|(\\d*)\\|(.*)$");
 
     @Override
     public List<DartAnalyzerReportIssue> parse(String input) {
@@ -40,13 +40,18 @@ public class DartAnalyzerMachineReportParser implements DartAnalyzerReportParser
                 .filter(Matcher::matches)
                 .map(matcher -> {
                     String ruleId = matcher.group(3).trim().toLowerCase(Locale.ROOT);
-                    String filePath = matcher.group(4).trim().replace("\\\\|", "|");
+                    String filePath = unescape(matcher.group(4).trim());
                     int lineNum = Integer.parseInt(matcher.group(5).trim());
                     int columnNum = Integer.parseInt(matcher.group(6).trim());
                     int length = Integer.parseInt(matcher.group(7).trim());
-                    String message = matcher.group(8).trim().replace("\\\\|", "|");
+                    String message = unescape(matcher.group(8).trim());
 
                     return new DartAnalyzerReportIssue(ruleId, message, filePath, lineNum, columnNum, length);
                 }).collect(Collectors.toList());
+    }
+
+    /** Dart escapes `\` as `\\` and `|` as `\|`; older SDKs doubled the backslash before a pipe. */
+    private static String unescape(String value) {
+        return value.replace("\\\\|", "|").replaceAll("\\\\(.)", "$1");
     }
 }

@@ -94,4 +94,16 @@ public class DartAnalyzerMachineReportParserTest {
     private void assertMessage(DartAnalyzerReportIssue issue, String expectedMessage) {
         assertThat(issue.getMessage()).isEqualTo(expectedMessage);
     }
+
+    @Test
+    public void parseCurrentDartEscapingAndDigitsInCode() {
+        String input = "INFO|LINT|PREFER_V2_THING|C:\\\\proj\\\\a\\|b.dart|1|2|3|Use a \\| b.";
+
+        List<DartAnalyzerReportIssue> issues = parser.parse(input);
+
+        assertThat(issues).hasSize(1);
+        assertRuleId(issues.get(0), "prefer_v2_thing");
+        assertFilePath(issues.get(0), "C:\\proj\\a|b.dart");
+        assertMessage(issues.get(0), "Use a | b.");
+    }
 }
