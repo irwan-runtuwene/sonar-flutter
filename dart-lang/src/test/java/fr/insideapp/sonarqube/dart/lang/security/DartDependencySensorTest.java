@@ -82,6 +82,19 @@ public class DartDependencySensorTest {
     }
 
     @Test
+    public void fallsBackToProjectWhenPubspecIsNotIndexed() throws Exception {
+        File base = tmp.newFolder();
+        Files.writeString(new File(base, "pubspec.lock").toPath(), LOCK);
+        SensorContextTester ctx = SensorContextTester.create(base.toPath());
+        ctx.setActiveRules(new ActiveRulesBuilder().addRule(new NewActiveRule.Builder()
+                .setRuleKey(RuleKey.of(SecurityRulesDefinition.REPOSITORY_KEY, SecurityRules.VULNERABLE_DEPENDENCY)).build()).build());
+
+        new DartDependencySensor().execute(ctx);
+
+        assertThat(ctx.allIssues()).hasSize(4);
+    }
+
+    @Test
     public void silentWhenRuleInactive() throws Exception {
         SensorContextTester ctx = context(false);
         new DartDependencySensor().execute(ctx);

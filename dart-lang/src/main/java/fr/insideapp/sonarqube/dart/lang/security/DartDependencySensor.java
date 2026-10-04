@@ -30,6 +30,7 @@ import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,13 +68,19 @@ public class DartDependencySensor implements Sensor {
         }
         var fs = context.fileSystem();
         var specs = fs.inputFiles(fs.predicates().matchesPathPattern("**/pubspec.yaml"));
+        boolean any = false;
         for (InputFile spec : specs) {
+            any = true;
             check(context, rule, advisories, spec, new File(spec.file().getParentFile(), "pubspec.lock"));
+        }
+        if (!any) {
+            // pubspec.yaml is outside sonar.sources, so report at project level
+            check(context, rule, advisories, null, new File(fs.baseDir(), "pubspec.lock"));
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void check(SensorContext context, RuleKey rule, List<PubAdvisory> advisories, InputFile spec, File lock) {
+    private void check(SensorContext context, RuleKey rule, List<PubAdvisory> advisories, @Nullable InputFile spec, File lock) {
         if (!lock.isFile()) {
             LOGGER.debug("No pubspec.lock next to {}", spec);
             return;
@@ -103,7 +110,7 @@ public class DartDependencySensor implements Sensor {
         });
     }
 
-    private void report(SensorContext context, RuleKey rule, InputFile spec, String name, String version,
+    private void report(SensorContext context, RuleKey rule, @Nullable InputFile spec, String name, String version,
                         String kind, PubAdvisory advisory) {
         String fixed = advisory.fixedIn(version);
         String message = name + " " + version + " is affected by " + advisory.displayId()
@@ -112,7 +119,8 @@ public class DartDependencySensor implements Sensor {
                 + (fixed == null ? "" : " Fixed in " + fixed + ".")
                 + (kind.contains("dev") ? " (dev dependency)" : "");
         NewIssue issue = context.newIssue().forRule(rule).overrideSeverity(Severity.valueOf(advisory.severity()));
-        issue.at(issue.newLocation().on(spec).message(message)).save();
+        var location = issue.newLocation().message(message);
+        issue.at(spec == null ? location.on(context.project()) : location.on(spec)).save();
     }
 
     static List<PubAdvisory> loadAdvisories() throws IOException {
