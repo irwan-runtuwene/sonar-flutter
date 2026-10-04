@@ -87,7 +87,7 @@ public class DartAnalyzerSensor implements Sensor {
 
     }
 
-    private void recordIssues(SensorContext sensorContext, List<DartAnalyzerReportIssue> issues) throws IOException {
+    void recordIssues(SensorContext sensorContext, List<DartAnalyzerReportIssue> issues) throws IOException {
         final Set<String> known = DartAnalyzerRulesDefinition.knownRuleKeys();
         for (DartAnalyzerReportIssue reported : issues) {
             DartAnalyzerReportIssue issue = reported;
